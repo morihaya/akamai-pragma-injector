@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akamai Debug Headers</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 280px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #ffffff;
+      color: #333;
+    }
+
+    .container {
+      padding: 16px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .header h1 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .toggle-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .toggle-label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .status {
+      font-size: 11px;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    .status.enabled {
+      color: #4CAF50;
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.3s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    input:checked + .slider {
+      background-color: #4CAF50;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    /* Link Section */
+    .link-section {
+      padding-top: 12px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .link-section a {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      color: #1976D2;
+      text-decoration: none;
+      font-size: 12px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+
+    .link-section a:hover {
+      background: #f0f7ff;
+    }
+
+    .link-icon {
+      margin-right: 8px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Akamai Debug Headers</h1>
+    </div>
+
+    <div class="toggle-section">
+      <div>
+        <div class="toggle-label">デバッグヘッダー</div>
+        <div class="status" id="status">OFF</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="link-section">
+      <a href="https://community.akamai.com/customers/s/article/Akamairxdxn3" target="_blank" rel="noopener noreferrer">
+        <span class="link-icon">📖</span>
+        デバッグヘッダの説明
+      </a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
