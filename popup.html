@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,10 +31,33 @@
       border-bottom: 1px solid #e0e0e0;
     }
 
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .header h1 {
       font-size: 14px;
       font-weight: 600;
       color: #333;
+    }
+
+    .lang-btn {
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: 500;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      background: #f5f5f5;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .lang-btn:hover {
+      background: #e8e8e8;
+      border-color: #ccc;
     }
 
     /* Master Toggle */
@@ -220,9 +243,12 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>Akamai Debug Headers</h1>
+      <div class="header-left">
+        <h1>Akamai Debug Headers</h1>
+        <button class="lang-btn" id="langToggle">JP</button>
+      </div>
       <div class="master-toggle">
-        <span class="master-toggle-label">有効</span>
+        <span class="master-toggle-label" data-i18n="enabled">Enabled</span>
         <label class="toggle-switch">
           <input type="checkbox" id="masterToggle">
           <span class="slider"></span>
@@ -231,12 +257,12 @@
     </div>
 
     <div class="status-bar" id="statusBar">
-      OFF - ヘッダーは付与されません
+      OFF - Headers not applied
     </div>
 
     <div class="button-group">
-      <button class="btn" id="selectAll">全選択</button>
-      <button class="btn" id="deselectAll">全解除</button>
+      <button class="btn" id="selectAll" data-i18n="selectAll">Select All</button>
+      <button class="btn" id="deselectAll" data-i18n="deselectAll">Deselect All</button>
     </div>
 
     <div class="header-list" id="headerList">
@@ -246,7 +272,7 @@
     <div class="link-section">
       <a href="https://techdocs.akamai.com/edge-diagnostics/docs/pragma-headers" target="_blank" rel="noopener noreferrer">
         <span class="link-icon">📖</span>
-        デバッグヘッダの説明
+        <span data-i18n="docLink">Debug Headers Documentation</span>
       </a>
     </div>
   </div>

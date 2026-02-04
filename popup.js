@@ -1,10 +1,37 @@
 // Akamai Debug Headers - Popup Script
 
+// i18n translations
+const i18n = {
+  en: {
+    enabled: "Enabled",
+    selectAll: "Select All",
+    deselectAll: "Deselect All",
+    docLink: "Debug Headers Documentation",
+    statusOn: (selected, total) => `ON - ${selected}/${total} headers applied`,
+    statusOnNoSelection: "ON - No headers selected",
+    statusOff: "OFF - Headers not applied",
+    langBtn: "JP"
+  },
+  ja: {
+    enabled: "有効",
+    selectAll: "全選択",
+    deselectAll: "全解除",
+    docLink: "デバッグヘッダの説明",
+    statusOn: (selected, total) => `ON - ${selected}/${total} ヘッダーを付与中`,
+    statusOnNoSelection: "ON - ヘッダーが選択されていません",
+    statusOff: "OFF - ヘッダーは付与されません",
+    langBtn: "EN"
+  }
+};
+
+let currentLang = "en";
+
 const masterToggle = document.getElementById("masterToggle");
 const statusBar = document.getElementById("statusBar");
 const headerList = document.getElementById("headerList");
 const selectAllBtn = document.getElementById("selectAll");
 const deselectAllBtn = document.getElementById("deselectAll");
+const langToggle = document.getElementById("langToggle");
 
 let currentState = {
   enabled: false,
@@ -12,19 +39,41 @@ let currentState = {
   headers: []
 };
 
+// Apply i18n to all elements with data-i18n attribute
+function applyI18n() {
+  const t = i18n[currentLang];
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if (t[key]) {
+      el.textContent = t[key];
+    }
+  });
+  langToggle.textContent = t.langBtn;
+  updateStatusBar();
+  renderHeaderList();
+}
+
+// Toggle language
+async function toggleLanguage() {
+  currentLang = currentLang === "en" ? "ja" : "en";
+  await chrome.storage.local.set({ language: currentLang });
+  applyI18n();
+}
+
 // ステータスバーを更新
 function updateStatusBar() {
   const selectedCount = Object.values(currentState.selections).filter(v => v).length;
   const totalCount = currentState.headers.length;
+  const t = i18n[currentLang];
 
   if (currentState.enabled && selectedCount > 0) {
-    statusBar.textContent = `ON - ${selectedCount}/${totalCount} ヘッダーを付与中`;
+    statusBar.textContent = t.statusOn(selectedCount, totalCount);
     statusBar.classList.add("enabled");
   } else if (currentState.enabled && selectedCount === 0) {
-    statusBar.textContent = "ON - ヘッダーが選択されていません";
+    statusBar.textContent = t.statusOnNoSelection;
     statusBar.classList.remove("enabled");
   } else {
-    statusBar.textContent = "OFF - ヘッダーは付与されません";
+    statusBar.textContent = t.statusOff;
     statusBar.classList.remove("enabled");
   }
 }
@@ -74,7 +123,11 @@ function renderHeaderList() {
 
     const desc = document.createElement("div");
     desc.className = "header-desc";
-    desc.textContent = header.description;
+    // Use localized description
+    const description = typeof header.description === "object"
+      ? (header.description[currentLang] || header.description.en)
+      : header.description;
+    desc.textContent = description;
 
     info.appendChild(name);
     info.appendChild(desc);
@@ -148,6 +201,10 @@ async function onDeselectAll() {
 
 // 初期化
 async function init() {
+  // Load saved language preference (default: English)
+  const { language } = await chrome.storage.local.get({ language: "en" });
+  currentLang = language;
+
   // バックグラウンドから現在の状態を取得
   currentState = await new Promise(resolve => {
     chrome.runtime.sendMessage({ action: "getStatus" }, resolve);
@@ -155,14 +212,14 @@ async function init() {
 
   // UIを初期化
   masterToggle.checked = currentState.enabled;
-  renderHeaderList();
-  updateStatusBar();
+  applyI18n();
   updateUIState();
 
   // イベントリスナーを設定
   masterToggle.addEventListener("change", onMasterToggle);
   selectAllBtn.addEventListener("click", onSelectAll);
   deselectAllBtn.addEventListener("click", onDeselectAll);
+  langToggle.addEventListener("click", toggleLanguage);
 }
 
 // 実行

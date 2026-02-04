@@ -1,48 +1,69 @@
 // Akamai Debug Headers - Background Service Worker
 
-// Pragmaヘッダーの定義
+// Pragma header definitions with i18n support
 const PRAGMA_HEADERS = [
   {
     id: "cache",
     pragma: "akamai-x-cache-on",
     responseHeader: "X-Cache",
-    description: "キャッシュの状態を返す"
+    description: {
+      en: "Returns cache status",
+      ja: "キャッシュの状態を返す"
+    }
   },
   {
     id: "cache-remote",
     pragma: "akamai-x-cache-remote-on",
     responseHeader: "X-Cache-Remote",
-    description: "親サーバーのキャッシュ状態"
+    description: {
+      en: "Returns parent server cache status",
+      ja: "親サーバーのキャッシュ状態"
+    }
   },
   {
     id: "check-cacheable",
     pragma: "akamai-x-check-cacheable",
     responseHeader: "X-Check-Cacheable",
-    description: "キャッシュ可能かどうか"
+    description: {
+      en: "Returns if cacheable",
+      ja: "キャッシュ可能かどうか"
+    }
   },
   {
     id: "true-cache-key",
     pragma: "akamai-x-get-true-cache-key",
     responseHeader: "X-True-Cache-Key",
-    description: "真のキャッシュキーを返す"
+    description: {
+      en: "Returns true cache key",
+      ja: "真のキャッシュキーを返す"
+    }
   },
   {
     id: "cache-key",
     pragma: "akamai-x-get-cache-key",
     responseHeader: "X-Cache-Key",
-    description: "キャッシュキー（詳細）を返す"
+    description: {
+      en: "Returns cache key (detailed)",
+      ja: "キャッシュキー（詳細）を返す"
+    }
   },
   {
     id: "serial",
     pragma: "akamai-x-serial-no",
     responseHeader: "X-Serial",
-    description: "シリアル番号を返す"
+    description: {
+      en: "Returns serial number",
+      ja: "シリアル番号を返す"
+    }
   },
   {
     id: "request-id",
     pragma: "akamai-x-get-request-id",
     responseHeader: "X-Akamai-Request-ID",
-    description: "リクエストIDを返す"
+    description: {
+      en: "Returns request ID",
+      ja: "リクエストIDを返す"
+    }
   }
 ];
 
