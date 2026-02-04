@@ -1,11 +1,83 @@
 // Akamai Debug Headers - Background Service Worker
 
-const AKAMAI_DEBUG_PRAGMA = "akamai-x-cache-on,akamai-x-cache-remote-on,akamai-x-check-cacheable,akamai-x-get-cache-key,akamai-x-get-extracted-values,akamai-x-get-request-id,akamai-x-serial-no,akamai-x-get-true-cache-key";
+// Pragmaヘッダーの定義
+const PRAGMA_HEADERS = [
+  {
+    id: "cache",
+    pragma: "akamai-x-cache-on",
+    responseHeader: "X-Cache",
+    description: "キャッシュの状態を返す"
+  },
+  {
+    id: "cache-remote",
+    pragma: "akamai-x-cache-remote-on",
+    responseHeader: "X-Cache-Remote",
+    description: "親サーバーのキャッシュ状態"
+  },
+  {
+    id: "check-cacheable",
+    pragma: "akamai-x-check-cacheable",
+    responseHeader: "X-Check-Cacheable",
+    description: "キャッシュ可能かどうか"
+  },
+  {
+    id: "true-cache-key",
+    pragma: "akamai-x-get-true-cache-key",
+    responseHeader: "X-True-Cache-Key",
+    description: "真のキャッシュキーを返す"
+  },
+  {
+    id: "cache-key",
+    pragma: "akamai-x-get-cache-key",
+    responseHeader: "X-Cache-Key",
+    description: "キャッシュキー（詳細）を返す"
+  },
+  {
+    id: "serial",
+    pragma: "akamai-x-serial-no",
+    responseHeader: "X-Serial",
+    description: "シリアル番号を返す"
+  },
+  {
+    id: "request-id",
+    pragma: "akamai-x-get-request-id",
+    responseHeader: "X-Akamai-Request-ID",
+    description: "リクエストIDを返す"
+  }
+];
 
 const RULE_ID = 1;
 
-// デバッグヘッダールールを追加
-async function enableDebugHeaders() {
+// デフォルトの選択状態（全てON）
+function getDefaultSelections() {
+  const selections = {};
+  PRAGMA_HEADERS.forEach(header => {
+    selections[header.id] = true;
+  });
+  return selections;
+}
+
+// 選択されたヘッダーからPragma値を生成
+function buildPragmaValue(selections) {
+  return PRAGMA_HEADERS
+    .filter(header => selections[header.id])
+    .map(header => header.pragma)
+    .join(",");
+}
+
+// デバッグヘッダールールを更新
+async function updateDebugHeadersRule(selections) {
+  const pragmaValue = buildPragmaValue(selections);
+
+  // 選択されたヘッダーがない場合はルールを削除
+  if (!pragmaValue) {
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: [RULE_ID],
+      addRules: []
+    });
+    return;
+  }
+
   const rule = {
     id: RULE_ID,
     priority: 1,
@@ -15,7 +87,7 @@ async function enableDebugHeaders() {
         {
           header: "Pragma",
           operation: "set",
-          value: AKAMAI_DEBUG_PRAGMA
+          value: pragmaValue
         }
       ]
     },
@@ -56,71 +128,74 @@ async function disableDebugHeaders() {
 }
 
 // バッジを更新
-function updateBadge(enabled) {
+function updateBadge(enabled, selections) {
   if (enabled) {
-    chrome.action.setBadgeText({ text: "ON" });
+    // 有効なヘッダー数をカウント
+    const count = Object.values(selections).filter(v => v).length;
+    chrome.action.setBadgeText({ text: count > 0 ? "ON" : "" });
     chrome.action.setBadgeBackgroundColor({ color: "#4CAF50" });
   } else {
     chrome.action.setBadgeText({ text: "" });
   }
 }
 
-// 状態を切り替え
-async function toggleDebugHeaders() {
-  const { enabled } = await chrome.storage.local.get({ enabled: false });
-  const newEnabled = !enabled;
+// 現在の状態を取得
+async function getStatus() {
+  const defaults = {
+    enabled: false,
+    selections: getDefaultSelections()
+  };
+  const { enabled, selections } = await chrome.storage.local.get(defaults);
+  return { enabled, selections, headers: PRAGMA_HEADERS };
+}
 
-  await chrome.storage.local.set({ enabled: newEnabled });
+// 状態を更新
+async function updateStatus(enabled, selections) {
+  await chrome.storage.local.set({ enabled, selections });
 
-  if (newEnabled) {
-    await enableDebugHeaders();
+  if (enabled && Object.values(selections).some(v => v)) {
+    await updateDebugHeadersRule(selections);
   } else {
     await disableDebugHeaders();
   }
 
-  updateBadge(newEnabled);
-  return newEnabled;
-}
-
-// 現在の状態を取得
-async function getStatus() {
-  const { enabled } = await chrome.storage.local.get({ enabled: false });
-  return enabled;
+  updateBadge(enabled, selections);
+  return { enabled, selections };
 }
 
 // 拡張機能インストール/更新時の初期化
 chrome.runtime.onInstalled.addListener(async () => {
-  const { enabled } = await chrome.storage.local.get({ enabled: false });
+  const { enabled, selections } = await getStatus();
 
   if (enabled) {
-    await enableDebugHeaders();
+    await updateDebugHeadersRule(selections);
   } else {
     await disableDebugHeaders();
   }
 
-  updateBadge(enabled);
+  updateBadge(enabled, selections);
 });
 
 // 起動時の初期化
 chrome.runtime.onStartup.addListener(async () => {
-  const { enabled } = await chrome.storage.local.get({ enabled: false });
+  const { enabled, selections } = await getStatus();
 
   if (enabled) {
-    await enableDebugHeaders();
+    await updateDebugHeadersRule(selections);
   }
 
-  updateBadge(enabled);
+  updateBadge(enabled, selections);
 });
 
 // ポップアップからのメッセージを受信
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "toggle") {
-    toggleDebugHeaders().then(sendResponse);
-    return true; // 非同期レスポンスを示す
-  }
-
   if (message.action === "getStatus") {
     getStatus().then(sendResponse);
+    return true;
+  }
+
+  if (message.action === "updateStatus") {
+    updateStatus(message.enabled, message.selections).then(sendResponse);
     return true;
   }
 });
