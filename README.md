@@ -55,7 +55,7 @@ Chrome/Edge用の拡張機能です。Akamai CDNのデバッグヘッダーを�
 
 ## 参考資料
 
-- [Akamaiデバッグヘッダの説明](https://community.akamai.com/customers/s/article/Akamairxdxn3)
+- [Akamaiデバッグヘッダの説明](https://techdocs.akamai.com/edge-diagnostics/docs/pragma-headers)
 
 ## ライセンス
 
