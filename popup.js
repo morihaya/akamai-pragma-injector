@@ -7,6 +7,9 @@ const i18n = {
     selectAll: "Select All",
     deselectAll: "Deselect All",
     docLink: "Debug Headers Documentation",
+    openDevTools: "Open Network Panel to check Response Headers",
+    shortcutHint: "Press",
+    shortcutHint2: "then click Network tab",
     statusOn: (selected, total) => `ON - ${selected}/${total} headers applied`,
     statusOnNoSelection: "ON - No headers selected",
     statusOff: "OFF - Headers not applied",
@@ -17,6 +20,9 @@ const i18n = {
     selectAll: "全選択",
     deselectAll: "全解除",
     docLink: "デバッグヘッダの説明",
+    openDevTools: "Response Headerを確認（Networkパネルを開く）",
+    shortcutHint: "",
+    shortcutHint2: "を押してNetworkタブをクリック",
     statusOn: (selected, total) => `ON - ${selected}/${total} ヘッダーを付与中`,
     statusOnNoSelection: "ON - ヘッダーが選択されていません",
     statusOff: "OFF - ヘッダーは付与されません",
@@ -32,6 +38,9 @@ const headerList = document.getElementById("headerList");
 const selectAllBtn = document.getElementById("selectAll");
 const deselectAllBtn = document.getElementById("deselectAll");
 const langToggle = document.getElementById("langToggle");
+const openDevToolsBtn = document.getElementById("openDevToolsBtn");
+const devToolsTooltip = document.getElementById("devToolsTooltip");
+const shortcutKey = document.getElementById("shortcutKey");
 
 let currentState = {
   enabled: false,
@@ -58,6 +67,28 @@ async function toggleLanguage() {
   currentLang = currentLang === "en" ? "ja" : "en";
   await chrome.storage.local.set({ language: currentLang });
   applyI18n();
+}
+
+// Detect OS and return appropriate shortcut
+function getShortcutKey() {
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  return isMac ? "⌘ + ⌥ + I" : "Ctrl + Shift + I";
+}
+
+// Show DevTools tooltip
+let tooltipTimeout = null;
+function showDevToolsTooltip() {
+  // Update shortcut key based on OS
+  shortcutKey.textContent = getShortcutKey();
+  devToolsTooltip.classList.add("show");
+
+  // Auto-hide after 3 seconds
+  if (tooltipTimeout) {
+    clearTimeout(tooltipTimeout);
+  }
+  tooltipTimeout = setTimeout(() => {
+    devToolsTooltip.classList.remove("show");
+  }, 3000);
 }
 
 // ステータスバーを更新
@@ -220,6 +251,10 @@ async function init() {
   selectAllBtn.addEventListener("click", onSelectAll);
   deselectAllBtn.addEventListener("click", onDeselectAll);
   langToggle.addEventListener("click", toggleLanguage);
+  openDevToolsBtn.addEventListener("click", showDevToolsTooltip);
+
+  // Initialize shortcut key display based on OS
+  shortcutKey.textContent = getShortcutKey();
 }
 
 // 実行
