@@ -1,4 +1,7 @@
 # Akamai Pragma Injector
+[![Test](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/test.yml/badge.svg)](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/test.yml)
+[![CodeQL](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/github-code-scanning/codeql)
+[![Dependabot Updates](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/dependabot/dependabot-updates)
 
 [日本語版 README はこちら](README.ja.md)
 
