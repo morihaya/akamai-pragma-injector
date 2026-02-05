@@ -71,7 +71,7 @@ async function toggleLanguage() {
 
 // Detect OS and return appropriate shortcut
 function getShortcutKey() {
-  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
   return isMac ? "⌘ + ⌥ + I" : "Ctrl + Shift + I";
 }
 
