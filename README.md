@@ -1,16 +1,20 @@
 # Akamai Pragma Injector
 
-Chrome/Edge用の拡張機能です。Akamai CDNのPragmaデバッグヘッダーを簡単に付与・ON/OFFできます。
+[日本語版 README はこちら](README.ja.md)
 
-## 機能
+A Chrome/Edge browser extension that easily injects Akamai Pragma debug headers into HTTP requests. Helps developers debug Akamai CDN cache behavior.
 
-- **ワンクリックでON/OFF**: アイコンをクリックしてトグルスイッチで切り替え
-- **視覚的な状態表示**: ONの時はバッジで「ON」と表示
-- **最小限の権限**: 必要最低限の権限のみを要求
+## Features
 
-## 付与されるデバッグヘッダー
+- **One-click ON/OFF**: Toggle debug headers with a simple switch
+- **Visual status indicator**: Badge shows "ON" when active
+- **Selective headers**: Choose which debug headers to inject
+- **Bilingual UI**: Supports English and Japanese
+- **Minimal permissions**: Only requests necessary permissions
 
-`Pragma` ヘッダーに以下のパラメータを追加します:
+## Debug Headers
+
+Adds the following parameters to the `Pragma` header:
 
 - `akamai-x-cache-on`
 - `akamai-x-cache-remote-on`
@@ -21,42 +25,80 @@ Chrome/Edge用の拡張機能です。Akamai CDNのPragmaデバッグヘッダ�
 - `akamai-x-serial-no`
 - `akamai-x-get-true-cache-key`
 
-## インストール方法
+## Installation
 
-### 開発者モードでのインストール
+### From Chrome Web Store / Edge Add-ons
 
-1. このリポジトリをクローンまたはダウンロード
-2. Chrome/Edgeで `chrome://extensions/` を開く
-3. 「デベロッパーモード」を有効にする
-4. 「パッケージ化されていない拡張機能を読み込む」をクリック
-5. ダウンロードしたフォルダを選択
+Coming soon...
 
-## 使い方
+### Developer Mode Installation
 
-1. ブラウザのツールバーにある拡張機能アイコンをクリック
-2. トグルスイッチでON/OFFを切り替え
-3. ONにすると、すべてのリクエストにAkamaiデバッグヘッダーが付与されます
-4. ブラウザの開発者ツール（F12）→ ネットワークタブでレスポンスヘッダーを確認
+1. Clone or download this repository
+2. Open `chrome://extensions/` in Chrome/Edge
+3. Enable "Developer mode"
+4. Click "Load unpacked"
+5. Select the downloaded folder
 
-## 権限について
+## Usage
 
-この拡張機能は以下の権限を使用します:
+1. Click the extension icon in the browser toolbar
+2. Toggle the switch to enable/disable header injection
+3. Select the specific headers you want to inject
+4. When enabled, all HTTP requests will include the selected Akamai debug headers
+5. Open DevTools (F12) → Network tab to view response headers
 
-| 権限 | 用途 |
-|------|------|
-| `declarativeNetRequest` | リクエストヘッダーの追加 |
-| `storage` | ON/OFF状態の保存 |
-| `<all_urls>` | すべてのサイトでヘッダーを付与可能にする |
+## Permissions
 
-**注意**: 「すべてのウェブサイトのデータの読み取りと変更」と表示されますが、実際には:
-- Pragmaヘッダーを**追加**するだけで、データの読み取りはしません
-- OFFの時は何も動作しません
-- 他のデータやCookieには一切アクセスしません
+This extension uses the following permissions:
 
-## 参考資料
+| Permission | Purpose |
+|------------|---------|
+| `declarativeNetRequest` | Add headers to outgoing requests |
+| `storage` | Save ON/OFF state and preferences |
+| `<all_urls>` | Apply headers to all websites |
 
-- [Akamaiデバッグヘッダの説明](https://techdocs.akamai.com/edge-diagnostics/docs/pragma-headers)
+**Note**: Although it shows "Read and change all your data on all websites", this extension:
+- Only **adds** Pragma headers; it does not read any data
+- Does nothing when disabled
+- Never accesses cookies or other sensitive data
 
-## ライセンス
+## References
+
+- [Akamai Pragma Headers Documentation](https://techdocs.akamai.com/edge-diagnostics/docs/pragma-headers)
+
+## Development
+
+### Setup
+
+```bash
+npm install
+```
+
+### Run Tests
+
+```bash
+# Run tests
+npm test
+
+# Watch mode (auto-run on file changes)
+npm run test:watch
+
+# With coverage report
+npm run test:coverage
+```
+
+### Lint
+
+```bash
+npm run lint
+```
+
+### Build ZIP for Store Submission
+
+```bash
+npm run zip
+```
+
+## License
 
 MIT License
