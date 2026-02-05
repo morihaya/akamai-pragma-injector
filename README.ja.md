@@ -6,6 +6,8 @@
 
 Chrome/Edge用の拡張機能です。Akamai CDNのPragmaデバッグヘッダーを簡単に付与・ON/OFFできます。
 
+![Screenshot](store-assets/screenshots/screenshot-01.png)
+
 ## 機能
 
 - **ワンクリックでON/OFF**: アイコンをクリックしてトグルスイッチで切り替え

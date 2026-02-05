@@ -7,6 +7,8 @@
 
 A Chrome/Edge browser extension that easily injects Akamai Pragma debug headers into HTTP requests. Helps developers debug Akamai CDN cache behavior.
 
+![Screenshot](store-assets/screenshots/screenshot-01.png)
+
 ## Features
 
 - **One-click ON/OFF**: Toggle debug headers with a simple switch
