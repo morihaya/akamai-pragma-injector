@@ -107,6 +107,8 @@ store-assets/
 - [ ] promotional/promo-small.png (440x280) - Chrome 用
 - [ ] promotional/promo-large.png (1400x560) - オプション
 
+---
+
 # アップロード時の入力
 
 ## Chrome Web Store
@@ -115,30 +117,30 @@ store-assets/
 
 Q: 拡張機能の用途は、単一で範囲の限られたわかりやすいものである必要があります。
 
-A: この拡張機能は、勤怠システム「リシテア」の勤務計画入力画面において、休日・休暇区分で「休日」を選択した際に、同じ行の時刻入力欄（出勤・退勤・休憩時間）を自動的にクリアする単一の機能のみを提供します。
+A: この拡張機能は、AkamaiのPragmaデバッグヘッダーをHTTPリクエストに付与するという単一の機能のみを提供します。開発者がAkamai CDNのキャッシュ動作をデバッグする際に使用します。
 
 ## 権限が必要な理由
 
 権限は、「activeTab」などの所定の文字列のリスト、または 1 つ以上のホストにアクセスを許可するマッチパターンのいずれかです。
 拡張機能の単一用途に不要な権限はすべて削除してください。不要な権限をリクエストした場合、このバージョンは不承認となります。
 
+### declarativeNetRequest
+
+Q: declarativeNetRequest が必要な理由
+
+A: すべてのHTTPリクエストにAkamaiのPragmaデバッグヘッダー（例: akamai-x-cache-on, akamai-x-get-cache-key）を付与するために使用します。ユーザーがONにした場合のみ、リクエストヘッダーを変更します。
+
 ### storage
 
 Q: storage が必要な理由
 
-A: ユーザーがオプションページで設定したカスタム値（対象 URL パターン、デフォルトの出勤・退勤・休憩時間）を保存・読み込みするために使用します。chrome.storage.sync API を使用して設定を保存し、content script で読み込んで動作に反映します。
+A: ユーザーのON/OFF設定、選択したヘッダーの種類、言語設定をブラウザ内に保存・読み込みするために使用します。chrome.storage.local APIを使用して設定を永続化します。
 
-### tabs
-
-Q: tabs が必要な理由
-
-A: オプションページで設定が保存された際に、既に開いているリシテアのタブに設定変更を通知し、ページをリロードせずに新しい設定を反映させるために使用します。chrome.tabs.query と chrome.tabs.sendMessage で対象タブにメッセージを送信します。
-
-### ホスト権限
+### ホスト権限 (`<all_urls>`)
 
 Q: ホスト権限が必要な理由
 
-A: リシテア勤怠システムの Web ページ上で Content Script を実行し、勤務計画入力画面の休日・休暇区分セレクトボックスの変更を監視して時刻入力欄を自動クリア・自動入力するために必要です。対象 URL はユーザーがオプションページでカスタマイズ可能です。
+A: Akamai CDNは様々なドメインで使用されるため、ユーザーがアクセスするすべてのURLに対してPragmaデバッグヘッダーを付与できる必要があります。特定のドメインに限定するとデバッグ機能の有用性が大幅に低下します。OFFの場合は一切のリクエスト変更は行いません。
 
 ## リモートコード を使用していますか？
 
@@ -149,8 +151,8 @@ A: いいえ。
 ## 販売地域
 
 - 決済方法: 料金なし
-- 公開設定: 限定公開
-- 販売地域: 日本（のみ選択）
+- 公開設定: 公開
+- 販売地域: すべての地域
 
 ---
 
@@ -162,24 +164,27 @@ https://partner.microsoft.com/en-us/dashboard/
 申請直前に以下の警告が出る。
 
 Q: Notes for certification (less than 2,000 characters)Learn More
-Provide any info that testers need to understand and use this extension. Customers won’t see this info.
+Provide any info that testers need to understand and use this extension. Customers won't see this info.
 
-A: This extension is designed for "Lysithea", a specific attendance management system used by our company.
+A: This extension injects Akamai Pragma debug headers into HTTP requests to help developers debug Akamai CDN cache behavior.
 
 FUNCTIONALITY:
 
-- When user selects a holiday option in the work schedule form, time input fields (start/end time, break times) are automatically cleared
-- When user changes back to a workday, default times are auto-filled
+- Toggle ON/OFF to enable/disable debug header injection
+- Select specific debug headers to inject (e.g., akamai-x-cache-on, akamai-x-get-cache-key)
+- View Akamai debug response headers in browser DevTools Network panel
 
-TESTING LIMITATIONS:
+TESTING:
 
-- This extension only works on a specific internal company URL (jtkpwb00.aeonpeople.biz)
-- Testing requires login credentials to the Lysithea system, which is not publicly accessible
-- The extension has no effect on other websites
+- Install extension and click the icon to open popup
+- Enable the toggle and select desired headers
+- Visit any website behind Akamai CDN
+- Open DevTools (F12) → Network tab → check response headers for X-Cache, X-Cache-Key, etc.
 
 PERMISSIONS USED:
 
-- storage: Save user preferences (default times, URL pattern)
-- tabs: Notify open tabs when settings change
+- declarativeNetRequest: Add Pragma headers to outgoing requests
+- storage: Save user preferences (ON/OFF state, selected headers, language)
+- host_permissions (<all_urls>): Akamai CDN is used across many domains, so all URLs need to be covered
 
 NO remote code is loaded. All JavaScript is bundled within the extension package.
