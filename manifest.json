@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Akamai Debug Headers",
+  "name": "Akamai Pragma Injector",
   "version": "1.0.0",
-  "description": "Akamai CDNのデバッグヘッダーを簡単に付与できる拡張機能",
+  "description": "Easily inject Akamai Pragma debug headers into your requests / AkamaiのPragmaデバッグヘッダーを簡単に付与",
   "permissions": [
     "declarativeNetRequest",
     "storage"

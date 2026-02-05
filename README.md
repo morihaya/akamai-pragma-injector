@@ -1,6 +1,6 @@
-# Akamai Debug Headers
+# Akamai Pragma Injector
 
-Chrome/Edge用の拡張機能です。Akamai CDNのデバッグヘッダーを簡単にON/OFFできます。
+Chrome/Edge用の拡張機能です。Akamai CDNのPragmaデバッグヘッダーを簡単に付与・ON/OFFできます。
 
 ## 機能
 
