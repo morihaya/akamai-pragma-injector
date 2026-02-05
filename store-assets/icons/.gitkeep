@@ -1,0 +1,6 @@
+# ストア用アイコンを配置するディレクトリ
+#
+# 必要なファイル:
+# - store-logo-300.png (300x300 px) - Edge Add-ons 用
+#
+# ※ 拡張機能本体の icons/icon128.png は Chrome Web Store でそのまま使用可能
