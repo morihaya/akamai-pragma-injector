@@ -1,6 +1,9 @@
 # Run tests on push and pull request
 name: Test
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]
