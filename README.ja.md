@@ -3,6 +3,7 @@
 [![Test](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/test.yml/badge.svg)](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/test.yml)
 [![CodeQL](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/github-code-scanning/codeql)
 [![Dependabot Updates](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/dependabot/dependabot-updates)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/jbnmnhdcefmgbdmcongkjkdfdajboagf)](https://chromewebstore.google.com/detail/akamai-pragma-injector/jbnmnhdcefmgbdmcongkjkdfdajboagf)
 
 Chrome/Edge用の拡張機能です。Akamai CDNのPragmaデバッグヘッダーを簡単に付与・ON/OFFできます。
 
@@ -28,6 +29,10 @@ Chrome/Edge用の拡張機能です。Akamai CDNのPragmaデバッグヘッダ�
 - `akamai-x-get-true-cache-key`
 
 ## インストール方法
+
+### Chrome Web Store からインストール
+
+[![Available in the Chrome Web Store](https://developer.chrome.com/static/docs/webstore/branding/image/206x58-chrome-web-043497a3d766e.png)](https://chromewebstore.google.com/detail/akamai-pragma-injector/jbnmnhdcefmgbdmcongkjkdfdajboagf)
 
 ### 開発者モードでのインストール
 

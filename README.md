@@ -2,6 +2,7 @@
 [![Test](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/test.yml/badge.svg)](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/test.yml)
 [![CodeQL](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/github-code-scanning/codeql)
 [![Dependabot Updates](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/morihaya/akamai-pragma-injector/actions/workflows/dependabot/dependabot-updates)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/jbnmnhdcefmgbdmcongkjkdfdajboagf)](https://chromewebstore.google.com/detail/akamai-pragma-injector/jbnmnhdcefmgbdmcongkjkdfdajboagf)
 
 [日本語版 README はこちら](README.ja.md)
 
@@ -32,9 +33,9 @@ Adds the following parameters to the `Pragma` header:
 
 ## Installation
 
-### From Chrome Web Store / Edge Add-ons
+### From Chrome Web Store
 
-Coming soon...
+[![Available in the Chrome Web Store](https://developer.chrome.com/static/docs/webstore/branding/image/206x58-chrome-web-043497a3d766e.png)](https://chromewebstore.google.com/detail/akamai-pragma-injector/jbnmnhdcefmgbdmcongkjkdfdajboagf)
 
 ### Developer Mode Installation
 
