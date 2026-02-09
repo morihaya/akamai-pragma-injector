@@ -12,7 +12,7 @@
     "zip": "zip -r akamai-pragma-injector.zip manifest.json background.js popup.html popup.js icons/ -x '*.DS_Store'"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.1",
     "eslint": "^9.39.2",
     "globals": "^17.3.0",
     "jest": "^30.2.0",
