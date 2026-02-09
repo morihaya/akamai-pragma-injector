@@ -24,49 +24,73 @@ AkamaiのPragmaデバッグヘッダーをワンクリックで付与。CDNキ�
 
 ---
 
-## 詳細な説明
+## 詳細な説明（英語 / English）
 
-### 機能概要
+A Chrome/Edge extension that injects Akamai Pragma debug headers into HTTP requests, helping developers inspect CDN cache behavior.
+
+🔧 One-Click Toggle
+Turn header injection on or off instantly with a simple toggle switch.
+
+📋 Selective Headers
+Choose only the debug headers you need. Select all or clear all with one click.
+
+🌐 Bilingual UI
+Switch between English and Japanese with one click.
+
+📖 Documentation Link
+Quick access to the official Akamai Pragma headers documentation.
+
+Debugging Capabilities:
+Inspect cache hit/miss status, remote cache state, cacheability, cache keys, extracted values, request IDs, serial numbers, and more — covering the major Pragma debug headers provided by Akamai.
+
+Who Is This For?
+- Web developers working with sites delivered through Akamai CDN
+- Site administrators who need to verify CDN cache behavior
+- Engineers debugging Akamai configurations
+
+Privacy:
+- No user data is collected
+- Settings are stored locally in your browser only
+- No communication with external servers
+- When turned off, requests are not modified in any way
+
+This extension is open source:
+https://github.com/morihaya/akamai-pragma-injector
+
+---
+
+## 詳細な説明（日本語 / Japanese）
 
 Akamai CDNのデバッグ用Pragmaヘッダーをリクエストに付与するChrome/Edge拡張機能です。開発者やサイト管理者がAkamaiのキャッシュ動作を確認する際に便利です。
 
-### 主な機能
-
-🔧 **ワンクリックでON/OFF**
+🔧 ワンクリックでON/OFF
 トグルスイッチで簡単にヘッダー付与のON/OFFを切り替えられます。
 
-📋 **選択式ヘッダー付与**
+📋 選択式ヘッダー付与
 必要なデバッグヘッダーだけを選んで付与できます。全選択・全解除も可能。
 
-🌐 **多言語対応**
+🌐 多言語対応
 英語・日本語UIに対応。ワンクリックで切り替え可能。
 
-📖 **ドキュメントへのリンク**
+📖 ドキュメントへのリンク
 Akamaiの公式ドキュメントへのリンク付き。
 
-### 対応デバッグヘッダー
+デバッグできる項目:
+キャッシュヒット/ミスの確認、リモートキャッシュの状態、キャッシュ可否の判定、キャッシュキーの取得、抽出値やリクエストID・シリアル番号の確認など、Akamaiが提供する主要なPragmaデバッグヘッダーに対応しています。
 
-- `akamai-x-cache-on` - キャッシュヒット/ミスの確認
-- `akamai-x-cache-remote-on` - リモートキャッシュの確認
-- `akamai-x-check-cacheable` - キャッシュ可否の確認
-- `akamai-x-get-cache-key` - キャッシュキーの取得
-- `akamai-x-get-extracted-values` - 抽出値の取得
-- `akamai-x-get-request-id` - リクエストIDの取得
-- `akamai-x-serial-no` - シリアル番号の取得
-- `akamai-x-get-true-cache-key` - 真のキャッシュキーの取得
-
-### 対象ユーザー
-
+対象ユーザー:
 - Akamai CDNを利用しているWebサイトの開発者
 - CDNキャッシュの動作確認が必要なサイト管理者
 - Akamaiの設定をデバッグするエンジニア
 
-### プライバシー
-
+プライバシー:
 - ユーザーデータの収集は行いません
 - 設定情報はブラウザ内にのみ保存されます
 - 外部サーバーへの通信は一切ありません
 - OFFの時はリクエストに一切影響を与えません
+
+この拡張機能はオープンソースです:
+https://github.com/morihaya/akamai-pragma-injector
 
 ---
 
@@ -86,6 +110,6 @@ Akamaiの公式ドキュメントへのリンク付き。
 
 ## サポート情報
 
-**サポート URL:** （GitHub リポジトリの Issues ページなど）
+**サポート URL:** https://github.com/morihaya/akamai-pragma-injector/issues
 
 **プライバシーポリシー URL:** （必要に応じて作成）
