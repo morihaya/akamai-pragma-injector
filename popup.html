@@ -182,6 +182,11 @@
 
     .header-info {
       flex: 1;
+      cursor: pointer;
+    }
+
+    .header-item.disabled .header-info {
+      cursor: default;
     }
 
     .header-name {
@@ -364,6 +369,6 @@
     </div>
   </div>
 
-  <script src="popup.js"></script>
+  <script type="module" src="popup.js"></script>
 </body>
 </html>

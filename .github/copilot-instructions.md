@@ -17,11 +17,14 @@ This is a Chrome/Edge browser extension that injects Akamai Pragma debug headers
 ```
 /
 ├── manifest.json      # Extension manifest (Manifest V3)
-├── background.js      # Service worker for header injection
+├── background.js      # Service worker for header injection (ES module)
 ├── popup.html         # Extension popup UI
-├── popup.js           # Popup interaction logic
+├── popup.js           # Popup interaction logic (ES module)
+├── shared/            # Shared ES modules
+│   ├── headers.js     # PRAGMA_HEADERS definitions and pure helpers
+│   └── i18n.js        # i18n translations and helpers
 ├── icons/             # Extension icons (16, 48, 128px)
-├── tests/             # Jest test files
+├── tests/             # Jest test files (import the real modules)
 └── store-assets/      # Chrome/Edge store submission assets
 ```
 
@@ -50,7 +53,7 @@ const i18n = {
 
 ## Key Components
 
-### PRAGMA_HEADERS (background.js)
+### PRAGMA_HEADERS (shared/headers.js)
 Array of Akamai debug header definitions:
 ```javascript
 {
@@ -80,7 +83,7 @@ Array of Akamai debug header definitions:
 ## Common Tasks
 
 ### Adding a new Pragma header
-1. Add entry to `PRAGMA_HEADERS` in `background.js`
+1. Add entry to `PRAGMA_HEADERS` in `shared/headers.js`
 2. Include `id`, `pragma`, `responseHeader`, `description` (en/ja)
 3. Add test case in `tests/background.test.js`
 
@@ -88,7 +91,7 @@ Array of Akamai debug header definitions:
 1. Update `popup.html` for structure changes
 2. Update CSS in `<style>` tag within `popup.html`
 3. Update `popup.js` for behavior changes
-4. Add i18n keys to both `en` and `ja` objects
+4. Add i18n keys to both `en` and `ja` objects in `shared/i18n.js`
 
 ### Store Submission
 - Update version in `manifest.json`

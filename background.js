@@ -1,105 +1,35 @@
 // Akamai Debug Headers - Background Service Worker
 
-// Pragma header definitions with i18n support
-const PRAGMA_HEADERS = [
-  {
-    id: "cache",
-    pragma: "akamai-x-cache-on",
-    responseHeader: "X-Cache",
-    description: {
-      en: "Returns cache status",
-      ja: "キャッシュの状態を返す"
-    }
-  },
-  {
-    id: "cache-remote",
-    pragma: "akamai-x-cache-remote-on",
-    responseHeader: "X-Cache-Remote",
-    description: {
-      en: "Returns parent server cache status",
-      ja: "親サーバーのキャッシュ状態"
-    }
-  },
-  {
-    id: "check-cacheable",
-    pragma: "akamai-x-check-cacheable",
-    responseHeader: "X-Check-Cacheable",
-    description: {
-      en: "Returns if cacheable",
-      ja: "キャッシュ可能かどうか"
-    }
-  },
-  {
-    id: "true-cache-key",
-    pragma: "akamai-x-get-true-cache-key",
-    responseHeader: "X-True-Cache-Key",
-    description: {
-      en: "Returns true cache key",
-      ja: "真のキャッシュキーを返す"
-    }
-  },
-  {
-    id: "cache-key",
-    pragma: "akamai-x-get-cache-key",
-    responseHeader: "X-Cache-Key",
-    description: {
-      en: "Returns cache key (detailed)",
-      ja: "キャッシュキー（詳細）を返す"
-    }
-  },
-  {
-    id: "serial",
-    pragma: "akamai-x-serial-no",
-    responseHeader: "X-Serial",
-    description: {
-      en: "Returns serial number",
-      ja: "シリアル番号を返す"
-    }
-  },
-  {
-    id: "request-id",
-    pragma: "akamai-x-get-request-id",
-    responseHeader: "X-Akamai-Request-ID",
-    description: {
-      en: "Returns request ID",
-      ja: "リクエストIDを返す"
-    }
-  }
+import {
+  PRAGMA_HEADERS,
+  RULE_ID,
+  buildPragmaValue,
+  countSelected,
+  getDefaultSelections
+} from "./shared/headers.js";
+
+// Pragmaヘッダーを付与する対象のリソースタイプ
+const TARGET_RESOURCE_TYPES = [
+  "main_frame",
+  "sub_frame",
+  "stylesheet",
+  "script",
+  "image",
+  "font",
+  "object",
+  "xmlhttprequest",
+  "ping",
+  "csp_report",
+  "media",
+  "websocket",
+  "webtransport",
+  "webbundle",
+  "other"
 ];
 
-const RULE_ID = 1;
-
-// デフォルトの選択状態（全てON）
-function getDefaultSelections() {
-  const selections = {};
-  PRAGMA_HEADERS.forEach(header => {
-    selections[header.id] = true;
-  });
-  return selections;
-}
-
-// 選択されたヘッダーからPragma値を生成
-function buildPragmaValue(selections) {
-  return PRAGMA_HEADERS
-    .filter(header => selections[header.id])
-    .map(header => header.pragma)
-    .join(",");
-}
-
-// デバッグヘッダールールを更新
-async function updateDebugHeadersRule(selections) {
-  const pragmaValue = buildPragmaValue(selections);
-
-  // 選択されたヘッダーがない場合はルールを削除
-  if (!pragmaValue) {
-    await chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: [RULE_ID],
-      addRules: []
-    });
-    return;
-  }
-
-  const rule = {
+// 選択内容からdeclarativeNetRequestのルールを生成
+function buildRule(pragmaValue) {
+  return {
     id: RULE_ID,
     priority: 1,
     action: {
@@ -114,34 +44,23 @@ async function updateDebugHeadersRule(selections) {
     },
     condition: {
       urlFilter: "*",
-      resourceTypes: [
-        "main_frame",
-        "sub_frame",
-        "stylesheet",
-        "script",
-        "image",
-        "font",
-        "object",
-        "xmlhttprequest",
-        "ping",
-        "csp_report",
-        "media",
-        "websocket",
-        "webtransport",
-        "webbundle",
-        "other"
-      ]
+      resourceTypes: TARGET_RESOURCE_TYPES
     }
   };
+}
+
+// デバッグヘッダールールを更新（選択がない場合はルールを削除）
+export async function updateDebugHeadersRule(selections) {
+  const pragmaValue = buildPragmaValue(selections);
 
   await chrome.declarativeNetRequest.updateDynamicRules({
     removeRuleIds: [RULE_ID],
-    addRules: [rule]
+    addRules: pragmaValue ? [buildRule(pragmaValue)] : []
   });
 }
 
 // デバッグヘッダールールを削除
-async function disableDebugHeaders() {
+export async function disableDebugHeaders() {
   await chrome.declarativeNetRequest.updateDynamicRules({
     removeRuleIds: [RULE_ID],
     addRules: []
@@ -149,11 +68,9 @@ async function disableDebugHeaders() {
 }
 
 // バッジを更新
-function updateBadge(enabled, selections) {
-  if (enabled) {
-    // 有効なヘッダー数をカウント
-    const count = Object.values(selections).filter(v => v).length;
-    chrome.action.setBadgeText({ text: count > 0 ? "ON" : "" });
+export function updateBadge(enabled, selections) {
+  if (enabled && countSelected(selections) > 0) {
+    chrome.action.setBadgeText({ text: "ON" });
     chrome.action.setBadgeBackgroundColor({ color: "#4CAF50" });
   } else {
     chrome.action.setBadgeText({ text: "" });
@@ -161,7 +78,7 @@ function updateBadge(enabled, selections) {
 }
 
 // 現在の状態を取得
-async function getStatus() {
+export async function getStatus() {
   const defaults = {
     enabled: false,
     selections: getDefaultSelections()
@@ -170,46 +87,34 @@ async function getStatus() {
   return { enabled, selections, headers: PRAGMA_HEADERS };
 }
 
-// 状態を更新
-async function updateStatus(enabled, selections) {
-  await chrome.storage.local.set({ enabled, selections });
-
-  if (enabled && Object.values(selections).some(v => v)) {
+// 状態に応じてルールとバッジを反映
+export async function applyState(enabled, selections) {
+  if (enabled && countSelected(selections) > 0) {
     await updateDebugHeadersRule(selections);
   } else {
     await disableDebugHeaders();
   }
-
   updateBadge(enabled, selections);
+}
+
+// 状態を更新
+export async function updateStatus(enabled, selections) {
+  await chrome.storage.local.set({ enabled, selections });
+  await applyState(enabled, selections);
   return { enabled, selections };
 }
 
-// 拡張機能インストール/更新時の初期化
-chrome.runtime.onInstalled.addListener(async () => {
+// 拡張機能インストール/更新時・ブラウザ起動時に保存済みの状態を反映
+async function restoreState() {
   const { enabled, selections } = await getStatus();
+  await applyState(enabled, selections);
+}
 
-  if (enabled) {
-    await updateDebugHeadersRule(selections);
-  } else {
-    await disableDebugHeaders();
-  }
-
-  updateBadge(enabled, selections);
-});
-
-// 起動時の初期化
-chrome.runtime.onStartup.addListener(async () => {
-  const { enabled, selections } = await getStatus();
-
-  if (enabled) {
-    await updateDebugHeadersRule(selections);
-  }
-
-  updateBadge(enabled, selections);
-});
+chrome.runtime.onInstalled.addListener(restoreState);
+chrome.runtime.onStartup.addListener(restoreState);
 
 // ポップアップからのメッセージを受信
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.action === "getStatus") {
     getStatus().then(sendResponse);
     return true;
