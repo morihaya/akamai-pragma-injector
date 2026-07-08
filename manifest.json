@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Akamai Pragma Injector",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Easily inject Akamai Pragma debug headers into your requests / AkamaiのPragmaデバッグヘッダーを簡単に付与",
   "permissions": [
     "declarativeNetRequest",

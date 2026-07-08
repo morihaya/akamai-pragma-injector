@@ -1,6 +1,6 @@
 {
   "name": "akamai-pragma-injector",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Easily inject Akamai Pragma debug headers into your requests",
   "type": "module",
   "private": true,
