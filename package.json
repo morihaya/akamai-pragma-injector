@@ -1,15 +1,15 @@
 {
   "name": "akamai-pragma-injector",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Easily inject Akamai Pragma debug headers into your requests",
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "lint": "eslint *.js --ignore-pattern 'node_modules/*'",
-    "zip": "zip -r akamai-pragma-injector.zip manifest.json background.js popup.html popup.js icons/ -x '*.DS_Store'"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "lint": "eslint .",
+    "zip": "zip -r akamai-pragma-injector.zip manifest.json background.js popup.html popup.js shared/ icons/ -x '*.DS_Store'"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -20,6 +20,7 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
+    "transform": {},
     "testMatch": [
       "**/tests/**/*.test.js"
     ],
@@ -28,7 +29,8 @@
     ],
     "collectCoverageFrom": [
       "background.js",
-      "popup.js"
+      "popup.js",
+      "shared/**/*.js"
     ]
   },
   "keywords": [
