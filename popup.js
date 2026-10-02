@@ -1,46 +1,23 @@
 // Akamai Debug Headers - Popup Script
 
-// i18n translations
-const i18n = {
-  en: {
-    enabled: "Enabled",
-    selectAll: "Select All",
-    deselectAll: "Deselect All",
-    docLink: "Debug Headers Documentation",
-    openDevTools: "Open Network Panel to check Response Headers",
-    shortcutHint: "Press",
-    shortcutHint2: "then click Network tab",
-    statusOn: (selected, total) => `ON - ${selected}/${total} headers applied`,
-    statusOnNoSelection: "ON - No headers selected",
-    statusOff: "OFF - Headers not applied",
-    langBtn: "JP"
-  },
-  ja: {
-    enabled: "有効",
-    selectAll: "全選択",
-    deselectAll: "全解除",
-    docLink: "デバッグヘッダの説明",
-    openDevTools: "Response Headerを確認（Networkパネルを開く）",
-    shortcutHint: "",
-    shortcutHint2: "を押してNetworkタブをクリック",
-    statusOn: (selected, total) => `ON - ${selected}/${total} ヘッダーを付与中`,
-    statusOnNoSelection: "ON - ヘッダーが選択されていません",
-    statusOff: "OFF - ヘッダーは付与されません",
-    langBtn: "EN"
-  }
+import { countSelected, getLocalizedDescription } from "./shared/headers.js";
+import { getShortcutKey, getStatusText, i18n } from "./shared/i18n.js";
+
+const TOOLTIP_AUTO_HIDE_MS = 3000;
+
+const elements = {
+  masterToggle: document.getElementById("masterToggle"),
+  statusBar: document.getElementById("statusBar"),
+  headerList: document.getElementById("headerList"),
+  selectAllBtn: document.getElementById("selectAll"),
+  deselectAllBtn: document.getElementById("deselectAll"),
+  langToggle: document.getElementById("langToggle"),
+  openDevToolsBtn: document.getElementById("openDevToolsBtn"),
+  devToolsTooltip: document.getElementById("devToolsTooltip"),
+  shortcutKey: document.getElementById("shortcutKey")
 };
 
 let currentLang = "en";
-
-const masterToggle = document.getElementById("masterToggle");
-const statusBar = document.getElementById("statusBar");
-const headerList = document.getElementById("headerList");
-const selectAllBtn = document.getElementById("selectAll");
-const deselectAllBtn = document.getElementById("deselectAll");
-const langToggle = document.getElementById("langToggle");
-const openDevToolsBtn = document.getElementById("openDevToolsBtn");
-const devToolsTooltip = document.getElementById("devToolsTooltip");
-const shortcutKey = document.getElementById("shortcutKey");
 
 let currentState = {
   enabled: false,
@@ -57,7 +34,7 @@ function applyI18n() {
       el.textContent = t[key];
     }
   });
-  langToggle.textContent = t.langBtn;
+  elements.langToggle.textContent = t.langBtn;
   updateStatusBar();
   renderHeaderList();
 }
@@ -69,164 +46,124 @@ async function toggleLanguage() {
   applyI18n();
 }
 
-// Detect OS and return appropriate shortcut
-function getShortcutKey() {
-  const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
-  return isMac ? "⌘ + ⌥ + I" : "Ctrl + Shift + I";
-}
-
 // Show DevTools tooltip
 let tooltipTimeout = null;
 function showDevToolsTooltip() {
-  // Update shortcut key based on OS
-  shortcutKey.textContent = getShortcutKey();
-  devToolsTooltip.classList.add("show");
+  elements.shortcutKey.textContent = getShortcutKey(navigator.platform);
+  elements.devToolsTooltip.classList.add("show");
 
   // Auto-hide after 3 seconds
   if (tooltipTimeout) {
     clearTimeout(tooltipTimeout);
   }
   tooltipTimeout = setTimeout(() => {
-    devToolsTooltip.classList.remove("show");
-  }, 3000);
+    elements.devToolsTooltip.classList.remove("show");
+  }, TOOLTIP_AUTO_HIDE_MS);
 }
 
 // ステータスバーを更新
 function updateStatusBar() {
-  const selectedCount = Object.values(currentState.selections).filter(v => v).length;
+  const selectedCount = countSelected(currentState.selections);
   const totalCount = currentState.headers.length;
-  const t = i18n[currentLang];
 
-  if (currentState.enabled && selectedCount > 0) {
-    statusBar.textContent = t.statusOn(selectedCount, totalCount);
-    statusBar.classList.add("enabled");
-  } else if (currentState.enabled && selectedCount === 0) {
-    statusBar.textContent = t.statusOnNoSelection;
-    statusBar.classList.remove("enabled");
-  } else {
-    statusBar.textContent = t.statusOff;
-    statusBar.classList.remove("enabled");
-  }
+  elements.statusBar.textContent = getStatusText(currentLang, currentState.enabled, selectedCount, totalCount);
+  elements.statusBar.classList.toggle("enabled", currentState.enabled && selectedCount > 0);
 }
 
 // UIの有効/無効状態を更新
 function updateUIState() {
-  const checkboxes = document.querySelectorAll(".header-checkbox");
-  const items = document.querySelectorAll(".header-item");
-
-  checkboxes.forEach(cb => {
+  document.querySelectorAll(".header-checkbox").forEach(cb => {
     cb.disabled = !currentState.enabled;
   });
 
-  items.forEach(item => {
+  document.querySelectorAll(".header-item").forEach(item => {
     item.classList.toggle("disabled", !currentState.enabled);
   });
 
-  selectAllBtn.disabled = !currentState.enabled;
-  deselectAllBtn.disabled = !currentState.enabled;
+  elements.selectAllBtn.disabled = !currentState.enabled;
+  elements.deselectAllBtn.disabled = !currentState.enabled;
+}
+
+// ヘッダー項目1件分のDOM要素を生成
+function createHeaderItem(header) {
+  const item = document.createElement("div");
+  item.className = "header-item";
+  item.classList.toggle("disabled", !currentState.enabled);
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.className = "header-checkbox";
+  checkbox.id = `header-${header.id}`;
+  checkbox.checked = currentState.selections[header.id] || false;
+  checkbox.disabled = !currentState.enabled;
+  checkbox.addEventListener("change", () => onHeaderToggle(header.id, checkbox.checked));
+
+  const info = document.createElement("div");
+  info.className = "header-info";
+
+  const name = document.createElement("div");
+  name.className = "header-name";
+  name.textContent = header.responseHeader;
+
+  const desc = document.createElement("div");
+  desc.className = "header-desc";
+  desc.textContent = getLocalizedDescription(header, currentLang);
+
+  info.appendChild(name);
+  info.appendChild(desc);
+
+  // ラベルクリックでもチェックボックスを切り替え
+  info.addEventListener("click", () => {
+    if (currentState.enabled) {
+      checkbox.checked = !checkbox.checked;
+      onHeaderToggle(header.id, checkbox.checked);
+    }
+  });
+
+  item.appendChild(checkbox);
+  item.appendChild(info);
+  return item;
 }
 
 // ヘッダーリストを生成
 function renderHeaderList() {
-  headerList.innerHTML = "";
-
+  elements.headerList.innerHTML = "";
   currentState.headers.forEach(header => {
-    const item = document.createElement("div");
-    item.className = "header-item";
-    if (!currentState.enabled) {
-      item.classList.add("disabled");
-    }
-
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.className = "header-checkbox";
-    checkbox.id = `header-${header.id}`;
-    checkbox.checked = currentState.selections[header.id] || false;
-    checkbox.disabled = !currentState.enabled;
-    checkbox.addEventListener("change", () => onHeaderToggle(header.id, checkbox.checked));
-
-    const info = document.createElement("div");
-    info.className = "header-info";
-
-    const name = document.createElement("div");
-    name.className = "header-name";
-    name.textContent = header.responseHeader;
-
-    const desc = document.createElement("div");
-    desc.className = "header-desc";
-    // Use localized description
-    const description = typeof header.description === "object"
-      ? (header.description[currentLang] || header.description.en)
-      : header.description;
-    desc.textContent = description;
-
-    info.appendChild(name);
-    info.appendChild(desc);
-
-    item.appendChild(checkbox);
-    item.appendChild(info);
-
-    // ラベルクリックでもチェックボックスを切り替え
-    info.addEventListener("click", () => {
-      if (currentState.enabled) {
-        checkbox.checked = !checkbox.checked;
-        onHeaderToggle(header.id, checkbox.checked);
-      }
-    });
-    info.style.cursor = currentState.enabled ? "pointer" : "default";
-
-    headerList.appendChild(item);
+    elements.headerList.appendChild(createHeaderItem(header));
   });
 }
 
 // 状態をバックグラウンドに送信
 async function sendUpdate() {
-  return new Promise(resolve => {
-    chrome.runtime.sendMessage({
-      action: "updateStatus",
-      enabled: currentState.enabled,
-      selections: currentState.selections
-    }, resolve);
+  await chrome.runtime.sendMessage({
+    action: "updateStatus",
+    enabled: currentState.enabled,
+    selections: currentState.selections
   });
+}
+
+// 全ヘッダーの選択状態を一括設定
+async function setAllSelections(checked) {
+  currentState.headers.forEach(header => {
+    currentState.selections[header.id] = checked;
+  });
+  await sendUpdate();
+  renderHeaderList();
+  updateStatusBar();
 }
 
 // マスタートグル変更時
 async function onMasterToggle() {
-  currentState.enabled = masterToggle.checked;
+  currentState.enabled = elements.masterToggle.checked;
   await sendUpdate();
   updateStatusBar();
   updateUIState();
-
-  // カーソルスタイルを更新
-  document.querySelectorAll(".header-info").forEach(info => {
-    info.style.cursor = currentState.enabled ? "pointer" : "default";
-  });
 }
 
 // 個別ヘッダートグル変更時
 async function onHeaderToggle(headerId, checked) {
   currentState.selections[headerId] = checked;
   await sendUpdate();
-  updateStatusBar();
-}
-
-// 全選択
-async function onSelectAll() {
-  currentState.headers.forEach(header => {
-    currentState.selections[header.id] = true;
-  });
-  await sendUpdate();
-  renderHeaderList();
-  updateStatusBar();
-}
-
-// 全解除
-async function onDeselectAll() {
-  currentState.headers.forEach(header => {
-    currentState.selections[header.id] = false;
-  });
-  await sendUpdate();
-  renderHeaderList();
   updateStatusBar();
 }
 
@@ -237,24 +174,22 @@ async function init() {
   currentLang = language;
 
   // バックグラウンドから現在の状態を取得
-  currentState = await new Promise(resolve => {
-    chrome.runtime.sendMessage({ action: "getStatus" }, resolve);
-  });
+  currentState = await chrome.runtime.sendMessage({ action: "getStatus" });
 
   // UIを初期化
-  masterToggle.checked = currentState.enabled;
+  elements.masterToggle.checked = currentState.enabled;
   applyI18n();
   updateUIState();
 
   // イベントリスナーを設定
-  masterToggle.addEventListener("change", onMasterToggle);
-  selectAllBtn.addEventListener("click", onSelectAll);
-  deselectAllBtn.addEventListener("click", onDeselectAll);
-  langToggle.addEventListener("click", toggleLanguage);
-  openDevToolsBtn.addEventListener("click", showDevToolsTooltip);
+  elements.masterToggle.addEventListener("change", onMasterToggle);
+  elements.selectAllBtn.addEventListener("click", () => setAllSelections(true));
+  elements.deselectAllBtn.addEventListener("click", () => setAllSelections(false));
+  elements.langToggle.addEventListener("click", toggleLanguage);
+  elements.openDevToolsBtn.addEventListener("click", showDevToolsTooltip);
 
   // Initialize shortcut key display based on OS
-  shortcutKey.textContent = getShortcutKey();
+  elements.shortcutKey.textContent = getShortcutKey(navigator.platform);
 }
 
 // 実行

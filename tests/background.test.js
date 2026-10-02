@@ -1,22 +1,27 @@
 /**
  * Tests for background.js - Akamai Pragma Injector Service Worker
+ *
+ * Imports the real implementation from shared/headers.js and background.js
+ * instead of duplicating the logic in the tests.
  */
 
-// Import the functions we want to test by extracting them
-// Since background.js doesn't export, we'll test the logic patterns
+import {
+  PRAGMA_HEADERS,
+  RULE_ID,
+  buildPragmaValue,
+  countSelected,
+  getDefaultSelections
+} from "../shared/headers.js";
+
+import {
+  disableDebugHeaders,
+  getStatus,
+  updateBadge,
+  updateDebugHeadersRule,
+  updateStatus
+} from "../background.js";
 
 describe('PRAGMA_HEADERS Configuration', () => {
-  // Define the expected header configuration for testing
-  const PRAGMA_HEADERS = [
-    { id: "cache", pragma: "akamai-x-cache-on", responseHeader: "X-Cache" },
-    { id: "cache-remote", pragma: "akamai-x-cache-remote-on", responseHeader: "X-Cache-Remote" },
-    { id: "check-cacheable", pragma: "akamai-x-check-cacheable", responseHeader: "X-Check-Cacheable" },
-    { id: "true-cache-key", pragma: "akamai-x-get-true-cache-key", responseHeader: "X-True-Cache-Key" },
-    { id: "cache-key", pragma: "akamai-x-get-cache-key", responseHeader: "X-Cache-Key" },
-    { id: "serial", pragma: "akamai-x-serial-no", responseHeader: "X-Serial" },
-    { id: "request-id", pragma: "akamai-x-get-request-id", responseHeader: "X-Akamai-Request-ID" }
-  ];
-
   test('should have 7 pragma headers defined', () => {
     expect(PRAGMA_HEADERS).toHaveLength(7);
   });
@@ -29,6 +34,13 @@ describe('PRAGMA_HEADERS Configuration', () => {
       expect(typeof header.id).toBe('string');
       expect(typeof header.pragma).toBe('string');
       expect(typeof header.responseHeader).toBe('string');
+    });
+  });
+
+  test('each header should have English and Japanese descriptions', () => {
+    PRAGMA_HEADERS.forEach(header => {
+      expect(typeof header.description.en).toBe('string');
+      expect(typeof header.description.ja).toBe('string');
     });
   });
 
@@ -46,26 +58,10 @@ describe('PRAGMA_HEADERS Configuration', () => {
 });
 
 describe('getDefaultSelections', () => {
-  const PRAGMA_HEADERS = [
-    { id: "cache" },
-    { id: "cache-remote" },
-    { id: "check-cacheable" }
-  ];
-
-  function getDefaultSelections() {
-    const selections = {};
-    PRAGMA_HEADERS.forEach(header => {
-      selections[header.id] = true;
-    });
-    return selections;
-  }
-
   test('should return all headers selected by default', () => {
     const selections = getDefaultSelections();
-    expect(selections).toEqual({
-      "cache": true,
-      "cache-remote": true,
-      "check-cacheable": true
+    PRAGMA_HEADERS.forEach(header => {
+      expect(selections[header.id]).toBe(true);
     });
   });
 
@@ -76,132 +72,154 @@ describe('getDefaultSelections', () => {
 });
 
 describe('buildPragmaValue', () => {
-  const PRAGMA_HEADERS = [
-    { id: "cache", pragma: "akamai-x-cache-on" },
-    { id: "cache-remote", pragma: "akamai-x-cache-remote-on" },
-    { id: "check-cacheable", pragma: "akamai-x-check-cacheable" }
-  ];
-
-  function buildPragmaValue(selections) {
-    return PRAGMA_HEADERS
-      .filter(header => selections[header.id])
-      .map(header => header.pragma)
-      .join(",");
-  }
-
   test('should return comma-separated pragma values for selected headers', () => {
-    const selections = { cache: true, "cache-remote": true, "check-cacheable": false };
+    const selections = { cache: true, "cache-remote": true };
     const result = buildPragmaValue(selections);
     expect(result).toBe("akamai-x-cache-on,akamai-x-cache-remote-on");
   });
 
   test('should return empty string when no headers selected', () => {
-    const selections = { cache: false, "cache-remote": false, "check-cacheable": false };
-    const result = buildPragmaValue(selections);
-    expect(result).toBe("");
+    expect(buildPragmaValue({})).toBe("");
   });
 
   test('should return all pragma values when all selected', () => {
-    const selections = { cache: true, "cache-remote": true, "check-cacheable": true };
-    const result = buildPragmaValue(selections);
-    expect(result).toBe("akamai-x-cache-on,akamai-x-cache-remote-on,akamai-x-check-cacheable");
+    const result = buildPragmaValue(getDefaultSelections());
+    expect(result).toBe(PRAGMA_HEADERS.map(h => h.pragma).join(","));
   });
 
   test('should return single pragma value when one selected', () => {
-    const selections = { cache: false, "cache-remote": true, "check-cacheable": false };
-    const result = buildPragmaValue(selections);
+    const result = buildPragmaValue({ "cache-remote": true });
     expect(result).toBe("akamai-x-cache-remote-on");
   });
 });
 
-describe('Chrome Storage API', () => {
-  beforeEach(() => {
-    resetChromeMocks();
-  });
-
-  test('should store enabled state', async () => {
-    await chrome.storage.local.set({ enabled: true });
-    expect(chrome.storage.local.set).toHaveBeenCalledWith({ enabled: true });
-  });
-
-  test('should retrieve stored values with defaults', async () => {
-    const defaults = { enabled: false, selections: {} };
-    const result = await chrome.storage.local.get(defaults);
-    expect(result).toHaveProperty('enabled');
-    expect(result).toHaveProperty('selections');
-  });
-
-  test('should return stored value when available', async () => {
-    setMockStorage({ enabled: true });
-    const result = await chrome.storage.local.get({ enabled: false });
-    expect(result.enabled).toBe(true);
+describe('countSelected', () => {
+  test('should count true values', () => {
+    expect(countSelected({ a: true, b: true, c: false })).toBe(2);
+    expect(countSelected({ a: false, b: false })).toBe(0);
+    expect(countSelected({ a: true, b: true, c: true })).toBe(3);
   });
 });
 
-describe('declarativeNetRequest API', () => {
+describe('updateDebugHeadersRule', () => {
   beforeEach(() => {
     resetChromeMocks();
   });
 
-  test('should call updateDynamicRules to add rule', async () => {
-    const rule = {
-      id: 1,
-      priority: 1,
-      action: {
-        type: "modifyHeaders",
-        requestHeaders: [{
-          header: "Pragma",
-          operation: "set",
-          value: "akamai-x-cache-on"
-        }]
-      },
-      condition: {
-        urlFilter: "*",
-        resourceTypes: ["main_frame"]
-      }
-    };
+  test('should add a Pragma header rule for selected headers', async () => {
+    await updateDebugHeadersRule({ cache: true });
 
-    await chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: [1],
-      addRules: [rule]
-    });
-
-    expect(chrome.declarativeNetRequest.updateDynamicRules).toHaveBeenCalledWith({
-      removeRuleIds: [1],
-      addRules: [rule]
-    });
+    expect(chrome.declarativeNetRequest.updateDynamicRules).toHaveBeenCalledTimes(1);
+    const arg = chrome.declarativeNetRequest.updateDynamicRules.mock.calls[0][0];
+    expect(arg.removeRuleIds).toEqual([RULE_ID]);
+    expect(arg.addRules).toHaveLength(1);
+    expect(arg.addRules[0].action.requestHeaders).toEqual([
+      { header: "Pragma", operation: "set", value: "akamai-x-cache-on" }
+    ]);
   });
 
-  test('should call updateDynamicRules to remove rule', async () => {
-    await chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: [1],
-      addRules: []
-    });
+  test('should remove the rule when no headers are selected', async () => {
+    await updateDebugHeadersRule({});
 
     expect(chrome.declarativeNetRequest.updateDynamicRules).toHaveBeenCalledWith({
-      removeRuleIds: [1],
+      removeRuleIds: [RULE_ID],
       addRules: []
     });
   });
 });
 
-describe('Badge Updates', () => {
+describe('disableDebugHeaders', () => {
+  beforeEach(() => {
+    resetChromeMocks();
+  });
+
+  test('should remove the dynamic rule', async () => {
+    await disableDebugHeaders();
+
+    expect(chrome.declarativeNetRequest.updateDynamicRules).toHaveBeenCalledWith({
+      removeRuleIds: [RULE_ID],
+      addRules: []
+    });
+  });
+});
+
+describe('updateBadge', () => {
   beforeEach(() => {
     resetChromeMocks();
   });
 
   test('should set badge text to ON when enabled with selections', () => {
-    chrome.action.setBadgeText({ text: "ON" });
+    updateBadge(true, { cache: true });
     expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "ON" });
+    expect(chrome.action.setBadgeBackgroundColor).toHaveBeenCalledWith({ color: "#4CAF50" });
   });
 
-  test('should clear badge text when disabled', () => {
-    chrome.action.setBadgeText({ text: "" });
+  test('should clear badge text when enabled without selections', () => {
+    updateBadge(true, {});
     expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "" });
   });
 
-  test('should set badge background color', () => {
-    chrome.action.setBadgeBackgroundColor({ color: "#4CAF50" });
-    expect(chrome.action.setBadgeBackgroundColor).toHaveBeenCalledWith({ color: "#4CAF50" });
+  test('should clear badge text when disabled', () => {
+    updateBadge(false, { cache: true });
+    expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "" });
+  });
+});
+
+describe('getStatus', () => {
+  beforeEach(() => {
+    resetChromeMocks();
+  });
+
+  test('should return defaults when nothing is stored', async () => {
+    const status = await getStatus();
+    expect(status.enabled).toBe(false);
+    expect(status.selections).toEqual(getDefaultSelections());
+    expect(status.headers).toBe(PRAGMA_HEADERS);
+  });
+
+  test('should return stored values when available', async () => {
+    setMockStorage({ enabled: true, selections: { cache: true } });
+    const status = await getStatus();
+    expect(status.enabled).toBe(true);
+    expect(status.selections).toEqual({ cache: true });
+  });
+});
+
+describe('updateStatus', () => {
+  beforeEach(() => {
+    resetChromeMocks();
+  });
+
+  test('should persist state and add rule when enabled with selections', async () => {
+    const result = await updateStatus(true, { cache: true });
+
+    expect(chrome.storage.local.set).toHaveBeenCalledWith({
+      enabled: true,
+      selections: { cache: true }
+    });
+    const arg = chrome.declarativeNetRequest.updateDynamicRules.mock.calls[0][0];
+    expect(arg.addRules).toHaveLength(1);
+    expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "ON" });
+    expect(result).toEqual({ enabled: true, selections: { cache: true } });
+  });
+
+  test('should remove rule and clear badge when disabled', async () => {
+    await updateStatus(false, { cache: true });
+
+    expect(chrome.declarativeNetRequest.updateDynamicRules).toHaveBeenCalledWith({
+      removeRuleIds: [RULE_ID],
+      addRules: []
+    });
+    expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "" });
+  });
+
+  test('should remove rule when enabled but nothing selected', async () => {
+    await updateStatus(true, {});
+
+    expect(chrome.declarativeNetRequest.updateDynamicRules).toHaveBeenCalledWith({
+      removeRuleIds: [RULE_ID],
+      addRules: []
+    });
+    expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "" });
   });
 });
