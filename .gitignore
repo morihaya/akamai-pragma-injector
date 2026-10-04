@@ -5,6 +5,7 @@ node_modules/
 coverage/
 
 # Build output
+build/
 *.zip
 
 # OS files

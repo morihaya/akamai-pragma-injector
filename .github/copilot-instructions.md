@@ -96,7 +96,7 @@ Array of Akamai debug header definitions:
 ### Store Submission
 - Update version in `manifest.json`
 - Update `store-assets/` files if needed
-- Run `npm run zip` to create submission package
+- Run `npm run zip` to create Chrome Web Store and Microsoft Edge Add-ons packages in `build/`
 
 ## Important Notes
 

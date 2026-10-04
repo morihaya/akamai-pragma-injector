@@ -100,6 +100,9 @@ npm run lint
 npm run zip
 ```
 
+Chrome Web Store / Microsoft Edge Add-ons 用の ZIP と、ローカルテスト用の
+展開済み拡張機能は `build/` に作成されます。
+
 ## ライセンス
 
 MIT License

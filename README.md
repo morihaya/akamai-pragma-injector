@@ -105,6 +105,9 @@ npm run lint
 npm run zip
 ```
 
+The Chrome Web Store and Microsoft Edge Add-ons packages, along with an unpacked
+extension for local testing, are created in `build/`.
+
 ## License
 
 MIT License
