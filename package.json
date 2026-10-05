@@ -16,7 +16,7 @@
     "eslint": "^10.0.2",
     "globals": "^17.4.0",
     "jest": "^30.3.0",
-    "jest-environment-jsdom": "^29.7.0"
+    "jest-environment-jsdom": "^30.5.2"
   },
   "jest": {
     "testEnvironment": "jsdom",
